@@ -96,6 +96,65 @@ select TO_DATE('15.      10    .    2020', 'DD/MM/YYYY')
   from dual;
 
 
+-------------------------------------------------------
+-- SECTION: Working with flexible format mapping
+-------------------------------------------------------
+
+alter session set nls_language='English';
+alter session set nls_date_language='English';
+
+select to_date('10.september 2022', 'DD.MM.YYYY') 
+ from dual;
+
+select to_date('30.february 2022', 'DD.MM.YYYY') 
+ from dual;
+-- ORA-01858: a non-numeric character was found where a numeric was expected
+
+-- SYNTAX: TO_CHAR - default <default_value> on conversion error
+/*
+TO_CHAR (<value> 
+         [default <default_value> on conversion error] 
+         [, <format> [, <nls_parameter>]]
+*/
+
+select to_date('30.february 2022' 
+                 default null on conversion error, 
+              'DD.MM.YYYY') 
+ from dual;
+ 
+select to_date('30.february 2022' 
+                 default '01.01.0001' on conversion error, 
+              'DD.MM.YYYY') 
+ from dual;
+ 
+select to_date('10.september 2022', 'DD.MM.YYYY') 
+ from dual;
+
+select to_date('10.sep 2022', 'DD.MM.YYYY') 
+ from dual;
+ 
+select to_date('12.05.2000', 'DD-MON-YYYY')
+  from dual; 
+
+select to_date('1.february 2022' 
+                 default null on conversion error, 
+              'DD.MM.YYYY') 
+ from dual;
+
+select to_date('1.feb 2022' 
+                 default null on conversion error, 
+              'DD.MM.YYYY') 
+ from dual; 
+ 
+ 
+select to_date('10.september 2022', 'FX DD.MM.YYYY') 
+ from dual;
+select to_date('31.dec 2022', 'FX DD.MM.YYYY') 
+ from dual;
+select to_date('31.12.2022', 'FX DD.MON.YYYY') 
+ from dual;
+
+
 select TO_TIMESTAMP('15.12.2021 15:24:14:535', 
                     'DD.MM.YYYY HH24:MI:SS:FF') 
   from dual;
@@ -294,6 +353,34 @@ select CAST(systimestamp as varchar(3)) from dual;
 select CAST(null as DATE) from dual; 
 
 select CAST(null as TIMESTAMP) from dual;
+
+-------------------------------------------------------
+-- SECTION: Validating conversions
+-------------------------------------------------------
+
+select validate_conversion('12-05-2000' as date, 
+                           'DD-MM-YYYY') 
+ from dual; --> 1
+
+select validate_conversion('12.05.2000' as date, 
+                           'DD-MM-YYYY') 
+ from dual;  --> 1
+
+select validate_conversion('12-SEPTEMBER-2000' as date, 
+                           'DD-MON-YYYY') 
+ from dual; --> 1
+
+select validate_conversion('12-SEPTEMBER-2000' as date, 
+                           'FXDD-MON-YYYY') 
+ from dual; --> 0
+
+select validate_conversion('12-SEPTEMBER-2000' as date, 
+                           'FXDD-MM-YYYY') 
+ from dual; --> 0
+
+select validate_conversion('31-SEPTEMBER-2000' as date, 
+                           'DD-MM-YYYY') 
+ from dual; --> 0
 
 -------------------------------------------------------
 -- DROP
